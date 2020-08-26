@@ -18,6 +18,8 @@
 #include <QMenu>
 #include <QAction>
 #include <QFont>
+#include <QToolBar>
+#include <QIcon>
 
 #include <qnamespace.h>
 
@@ -55,7 +57,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 void MainWindow::mousePressEvent(QMouseEvent* event) {
     if (game->getState() == gameState::READY) {
         int x = (int)(event->x() - board->x() - GRID_SHIFT) / TILE_WIDTH;
-        int y = (int)(event->y() - board->y() - GRID_SHIFT) / TILE_WIDTH;
+        int y = (int)(event->y() - board->y() - toolBar->height() - GRID_SHIFT) / TILE_WIDTH;
 
         // std::cout << event->x() << ' ' << event->y() << std::endl;
 
@@ -90,33 +92,53 @@ void MainWindow::basicInit() {
 }
 
 void MainWindow::initUi() {
-    menuBar = new QMenuBar(this);
-    menuBar->setGeometry(0, 0, this->width(), 80);
+    QMenu* gameMenu = new QMenu(tr("&Game"));
 
-    QMenu* startMenu = menuBar->addMenu(tr("&Start"));
-    QMenu* pauseMenu = menuBar->addMenu(tr("&Pause"));
-    QMenu* continueMenu = menuBar->addMenu(tr("&Continue"));
-    QMenu* restartMenu = menuBar->addMenu(tr("&Restart"));
-    QMenu* saveMenu = menuBar->addMenu(tr("S&ave"));
-    QMenu* loadMenu = menuBar->addMenu(tr("&Load"));
+    startAction = new QAction(QIcon(":/icons/start.svg"), tr("&Start the game"), this);
+    pauseAction = new QAction(QIcon(":/icons/pause.svg"), tr("&Pause the game"), this);
+    continueAction = new QAction(QIcon(":/icons/continue.svg"), tr("&Continue playing game"), this);
+    restartAction = new QAction(QIcon(":/icons/restart.svg"), tr("&Restart a new game"), this);
+    saveAction = new QAction(QIcon(":/icons/save.svg"), tr("S&ave the game"), this);
+    loadAction = new QAction(QIcon(":/icons/load.svg"), tr("&Load a saved game"), this);
+    quitAction = new QAction(QIcon(":/icons/quit.svg"), tr("&Close the window"), this);
 
-    startAction = new QAction(tr("&Start"), this);
-    pauseAction = new QAction(tr("&Pause"), this);
-    continueAction = new QAction(tr("&Continue"), this);
-    restartAction = new QAction(tr("&Restart"), this);
-    saveAction = new QAction(tr("S&ave"), this);
-    loadAction = new QAction(tr("&Load"), this);
+    startAction->setShortcut(Qt::CTRL | Qt::Key_E);
+    pauseAction->setShortcut(Qt::CTRL | Qt::Key_R);
+    continueAction->setShortcut(Qt::CTRL | Qt::Key_T);
+    restartAction->setShortcut(Qt::CTRL | Qt::Key_N);
+    saveAction->setShortcut(Qt::CTRL | Qt::Key_S);
+    loadAction->setShortcut(Qt::CTRL | Qt::Key_L);
+    quitAction->setShortcut(Qt::CTRL | Qt::Key_C);
 
-    startMenu->addAction(startAction);
-    pauseMenu->addAction(pauseAction);
-    continueMenu->addAction(continueAction);
-    restartMenu->addAction(restartAction);
-    saveMenu->addAction(saveAction);
-    loadMenu->addAction(loadAction);
+    menuBar()->addMenu(gameMenu);
 
-    menuBar->setNativeMenuBar(false);
+    gameMenu->addAction(startAction);
+    gameMenu->addSeparator();
+    gameMenu->addAction(pauseAction);
+    gameMenu->addAction(continueAction);
+    gameMenu->addSeparator();
+    gameMenu->addAction(restartAction);
+    gameMenu->addSeparator();
+    gameMenu->addAction(saveAction);
+    gameMenu->addAction(loadAction);
+    gameMenu->addSeparator();
+    gameMenu->addAction(quitAction);
 
     // Create menu bar
+
+    toolBar = addToolBar("Tool Bar");
+
+    toolBar->addAction(startAction);
+    toolBar->addAction(pauseAction);
+    toolBar->addAction(continueAction);
+    toolBar->addAction(restartAction);
+    toolBar->addAction(saveAction);
+    toolBar->addAction(loadAction);
+    toolBar->addAction(quitAction);
+
+    toolBar->setMovable(false);
+
+    // Create tool bar
 
     timer = new QTimer(this);
 
@@ -129,6 +151,14 @@ void MainWindow::initUi() {
     saveBtn = new QPushButton(tr("Save"), this);
     loadBtn = new QPushButton(tr("Load"), this);
     quitBtn = new QPushButton(tr("Quit"), this);
+
+    startBtn->setFixedSize(BTN_LENGTH, BTN_WIDTH);
+    pauseBtn->setFixedSize(BTN_LENGTH, BTN_WIDTH);
+    continueBtn->setFixedSize(BTN_LENGTH, BTN_WIDTH);
+    restartBtn->setFixedSize(BTN_LENGTH, BTN_WIDTH);
+    saveBtn->setFixedSize(BTN_LENGTH, BTN_WIDTH);
+    loadBtn->setFixedSize(BTN_LENGTH, BTN_WIDTH);
+    quitBtn->setFixedSize(BTN_LENGTH, BTN_WIDTH);
 
     // Create button
 
@@ -161,21 +191,49 @@ void MainWindow::initUi() {
 
     // Create caption label
 
+    QFont* titleFont = new QFont;
+    titleFont->setPixelSize(TITLE_SIZE);
+    titleFont->setFamily("Monaco");
+
+    boardTitle = new QLabel;
+    boardTitle->setText(tr("<font color=darkred>Score Board </font>"));
+
+    // These spaces are aimed to align the board
+
+    boardTitle->setAlignment(Qt::AlignCenter);
+    boardTitle->setFont(*titleFont);
+
+    QFont* subTitleFont = new QFont;
+    subTitleFont->setPixelSize(SUB_TITLE_SIZE);
+    subTitleFont->setFamily("Monaco");
+
+    stepTitle = new QLabel;
+    stepTitle->setText(tr("Step"));
+    stepTitle->setAlignment(Qt::AlignCenter);
+    stepTitle->setFont(*subTitleFont);
+
+    scoreTitle = new QLabel;
+    scoreTitle->setText(tr("Score"));
+    scoreTitle->setAlignment(Qt::AlignCenter);
+    scoreTitle->setFont(*subTitleFont);
+
+    // Create score board titles
+
+    QFont* numberFont = new QFont;
+    numberFont->setPixelSize(NUMBER_SIZE);
+    numberFont->setFamily("Monaco");
+
     stepBoard = new QLabel;
-    std::string step("Step: ");
-    step += std::to_string(game->getStep());
-    stepBoard->setText(step.c_str());
-    stepBoard->setAlignment(Qt::AlignLeft);
-    stepBoard->show();
+    stepBoard->setText(std::to_string(game->getStep()).c_str());
+    stepBoard->setAlignment(Qt::AlignCenter);
+    stepBoard->setFont(*numberFont);
 
     scoreBoard = new QLabel;
-    std::string score("Score: ");
-    step += std::to_string(game->getScore());
-    scoreBoard->setText(score.c_str());
-    scoreBoard->setAlignment(Qt::AlignLeft);
-    scoreBoard->show();
+    scoreBoard->setText(std::to_string(game->getScore()).c_str());
+    scoreBoard->setAlignment(Qt::AlignCenter);
+    scoreBoard->setFont(*numberFont);
 
-    // Create score board
+    // Create score board numbers
 
     dieOfEdge = new QLabel(board);
     dieOfObstacle = new QLabel(board);
@@ -220,22 +278,50 @@ void MainWindow::initUi() {
 
     // Create death information
 
+    QVBoxLayout* generalBoard = new QVBoxLayout;
+
+    generalBoard->addWidget(boardTitle);
+
+    QHBoxLayout* stepBoardLayout = new QHBoxLayout;
+
+    stepBoardLayout->addWidget(stepTitle);
+    stepBoardLayout->addWidget(stepBoard);
+
+    QHBoxLayout* scoreBoardLayout = new QHBoxLayout;
+
+    scoreBoardLayout->addWidget(scoreTitle);
+    scoreBoardLayout->addWidget(scoreBoard);
+
+    generalBoard->addLayout(stepBoardLayout);
+    generalBoard->addLayout(scoreBoardLayout);
+
+    // Score board layout
+
     QVBoxLayout* btnLayout = new QVBoxLayout;
 
     btnLayout->addStretch();
-    btnLayout->addWidget(startBtn);
-    btnLayout->addWidget(pauseBtn);
-    btnLayout->addWidget(continueBtn);
-    btnLayout->addWidget(restartBtn);
-    btnLayout->addWidget(saveBtn);
-    btnLayout->addWidget(loadBtn);
-    btnLayout->addWidget(quitBtn);
-
-    btnLayout->addWidget(stepBoard);
-    btnLayout->addWidget(scoreBoard);
+    btnLayout->addLayout(generalBoard);
     btnLayout->addStretch();
 
-    // Button & Score board layout
+    btnLayout->addWidget(startBtn);
+    btnLayout->addSpacing(BTN_INTERVAL);
+    btnLayout->addWidget(pauseBtn);
+    btnLayout->addSpacing(BTN_INTERVAL);
+    btnLayout->addWidget(continueBtn);
+    btnLayout->addSpacing(BTN_INTERVAL);
+    btnLayout->addWidget(restartBtn);
+    btnLayout->addSpacing(BTN_INTERVAL);
+    btnLayout->addWidget(saveBtn);
+    btnLayout->addSpacing(BTN_INTERVAL);
+    btnLayout->addWidget(loadBtn);
+    btnLayout->addSpacing(BTN_INTERVAL);
+    btnLayout->addWidget(quitBtn);
+
+    btnLayout->addStretch();
+
+    btnLayout->setAlignment(Qt::AlignHCenter);
+
+    // General layout of the right part
 
     QHBoxLayout* boardLayout = new QHBoxLayout;
 
@@ -272,7 +358,6 @@ void MainWindow::initSignalSlot() {
     QObject::connect(game->getSnake(), &Snake::edgeTouched, [=](){this->game->gameOver(gameState::END_BY_EDGE);});
     QObject::connect(game->getSnake(), &Snake::bodyTouched, [=](){this->game->gameOver(gameState::END_BY_ITSELF);});
     QObject::connect(game->getSnake(), &Snake::obstaclesTouched, [=](){this->game->gameOver(gameState::END_BY_OBSTACLE);});
-    // TODO: GameOver information
 
     // Snake signals
 
@@ -289,15 +374,15 @@ void MainWindow::initSignalSlot() {
 
     // Button signals
 
-    QObject::connect(startAction, &QAction::triggered, [=](){this->game->setState(gameState::RUNNING);});
+    QObject::connect(startAction, &QAction::triggered, startBtn, &QPushButton::click);
     QObject::connect(pauseAction, &QAction::triggered, pauseBtn, &QPushButton::click);
     QObject::connect(continueAction, &QAction::triggered, continueBtn, &QPushButton::click);
     QObject::connect(restartAction, &QAction::triggered, restartBtn, &QPushButton::click);
     QObject::connect(saveAction, &QAction::triggered, saveBtn, &QPushButton::click);
     QObject::connect(loadAction, &QAction::triggered, loadBtn, &QPushButton::click);
+    QObject::connect(quitAction, &QAction::triggered, quitBtn, &QPushButton::click);
 
     // Action(Menu bar) signals
-    // ???
 
     QObject::connect(timer, &QTimer::timeout, [=]() {
         if (this->game->getState() == gameState::RUNNING) this->game->getSnake()->move();
@@ -333,13 +418,26 @@ void MainWindow::updateUi() {
 
     // Button disabled
 
-    std::string step("Step: ");
-    step += std::to_string(game->getStep());
-    stepBoard->setText(step.c_str());
+    startAction->setDisabled(game->getState() != gameState::READY);
+    pauseAction->setDisabled(game->getState() != gameState::RUNNING);
+    continueAction->setDisabled(game->getState() != gameState::PAUSE);
+    restartAction->setDisabled(game->getState() == gameState::READY || game->getState() == gameState::RUNNING);
+    saveAction->setDisabled(game->getState() != gameState::PAUSE);
+    loadAction->setDisabled(game->getState() != gameState::READY);
+    quitAction->setDisabled(false);
 
-    std::string score("Score: ");
-    score += std::to_string(game->getScore());
-    scoreBoard->setText(score.c_str());
+    // Action disabled
+
+    stepBoard->setText(std::to_string(game->getStep()).c_str());
+    if (
+        game->getState() == gameState::END_BY_EDGE ||
+        game->getState() == gameState::END_BY_OBSTACLE ||
+        game->getState() == gameState::END_BY_ITSELF
+    ) {
+        scoreBoard->setText(("<font color=red>" + std::to_string(game->getScore()) + "</font>").c_str());
+    } else {
+        scoreBoard->setText(std::to_string(game->getScore()).c_str());
+    }
 
     // Score board
 }

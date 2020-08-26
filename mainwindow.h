@@ -12,6 +12,7 @@
 #include <QMenuBar>
 #include <QAction>
 #include <QMouseEvent>
+#include <QToolBar>
 
 class MainWindow: public QMainWindow {
 
@@ -40,6 +41,10 @@ private:
     QPushButton* loadBtn;
     QPushButton* quitBtn;
 
+    QLabel* boardTitle;
+    QLabel* stepTitle;
+    QLabel* scoreTitle;
+
     QLabel* stepBoard;
     QLabel* scoreBoard;
 
@@ -50,7 +55,7 @@ private:
 
     QLabel* pauseLabel;
 
-    QMenuBar* menuBar;
+    QToolBar* toolBar;
 
     QAction* startAction;
     QAction* pauseAction;
@@ -58,6 +63,7 @@ private:
     QAction* restartAction;
     QAction* saveAction;
     QAction* loadAction;
+    QAction* quitAction;
 
     Board* board;
 
