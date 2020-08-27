@@ -44,7 +44,8 @@ private:
 
     int growth;
 
-    void judge(position&);
+    void judge(position&, edgeMode);
+    void operateOutOfRange();
 };
 
 #endif // SNAKE_H

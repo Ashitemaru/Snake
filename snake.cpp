@@ -92,7 +92,7 @@ void Snake::move() {
         case direction::RIGHT: ++body[0].xPos; break;
     }
     dir = newDir;
-    judge(body[0]);
+    judge(body[0], parent->getEdgeMode());
 
     // Move head & judge
 
@@ -106,9 +106,17 @@ void Snake::move() {
     return;
 }
 
-void Snake::judge(position& headPos) {
+void Snake::judge(position& headPos, edgeMode edge) {
     if (headPos == parent->getFood()->getPos()) emit foodTouched();
-    if (outOfRange(headPos)) emit edgeTouched();
+
+    if (outOfRange(headPos) && (edge == edgeMode::CLASSIC)) emit edgeTouched();
+    if (outOfRange(headPos) && (edge == edgeMode::EDGELESS)) operateOutOfRange();
+
     if (std::find(++body.begin(), body.end(), headPos) != body.end()) emit bodyTouched();
     if (std::find(parent->getObstacles().begin(), parent->getObstacles().end(), headPos) != parent->getObstacles().end()) emit obstaclesTouched();
+}
+
+void Snake::operateOutOfRange() {
+    body[0].xPos = (body[0].xPos + TILE_NUMBER) % TILE_NUMBER;
+    body[0].yPos = (body[0].yPos + TILE_NUMBER) % TILE_NUMBER;
 }

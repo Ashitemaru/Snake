@@ -20,6 +20,7 @@
 #include <QFont>
 #include <QToolBar>
 #include <QIcon>
+#include <QGroupBox>
 
 #include <qnamespace.h>
 
@@ -92,7 +93,56 @@ void MainWindow::basicInit() {
 }
 
 void MainWindow::initUi() {
-    QMenu* gameMenu = new QMenu(tr("&Game"));
+    QMenu* basicGameMenu = new QMenu(tr("&Basic"));
+
+    startAction_noIcon = new QAction(tr("&Start the game"), this);
+    pauseAction_noIcon = new QAction(tr("&Pause the game"), this);
+    continueAction_noIcon = new QAction(tr("&Continue playing game"), this);
+    restartAction_noIcon = new QAction(tr("&Restart a new game"), this);
+    saveAction_noIcon = new QAction(tr("S&ave the game"), this);
+    loadAction_noIcon = new QAction(tr("&Load a saved game"), this);
+    quitAction_noIcon = new QAction(tr("&Close the window"), this);
+
+    startAction_noIcon->setShortcut(Qt::CTRL | Qt::Key_E);
+    pauseAction_noIcon->setShortcut(Qt::CTRL | Qt::Key_R);
+    continueAction_noIcon->setShortcut(Qt::CTRL | Qt::Key_T);
+    restartAction_noIcon->setShortcut(Qt::CTRL | Qt::Key_N);
+    saveAction_noIcon->setShortcut(Qt::CTRL | Qt::Key_S);
+    loadAction_noIcon->setShortcut(Qt::CTRL | Qt::Key_L);
+    quitAction_noIcon->setShortcut(Qt::CTRL | Qt::Key_C);
+
+    menuBar()->addMenu(basicGameMenu);
+
+    basicGameMenu->addAction(startAction_noIcon);
+    basicGameMenu->addSeparator();
+    basicGameMenu->addAction(pauseAction_noIcon);
+    basicGameMenu->addAction(continueAction_noIcon);
+    basicGameMenu->addSeparator();
+    basicGameMenu->addAction(restartAction_noIcon);
+    basicGameMenu->addSeparator();
+    basicGameMenu->addAction(saveAction_noIcon);
+    basicGameMenu->addAction(loadAction_noIcon);
+    basicGameMenu->addSeparator();
+    basicGameMenu->addAction(quitAction_noIcon);
+
+    // Create basic menu
+
+    QMenu* gameModeMenu = new QMenu(tr("&Mode"));
+
+    classicMode = new QAction(tr("Classic mode"), this);
+    edgelessMode = new QAction(tr("Edgeless mode"), this);
+
+    classicMode->setCheckable(true);
+    edgelessMode->setCheckable(true);
+
+    gameModeMenu->addAction(classicMode);
+    gameModeMenu->addAction(edgelessMode);
+
+    menuBar()->addMenu(gameModeMenu);
+
+    // Create game mode menu
+
+    toolBar = addToolBar("Tool Bar");
 
     startAction = new QAction(QIcon(":/icons/start.svg"), tr("&Start the game"), this);
     pauseAction = new QAction(QIcon(":/icons/pause.svg"), tr("&Pause the game"), this);
@@ -109,24 +159,6 @@ void MainWindow::initUi() {
     saveAction->setShortcut(Qt::CTRL | Qt::Key_S);
     loadAction->setShortcut(Qt::CTRL | Qt::Key_L);
     quitAction->setShortcut(Qt::CTRL | Qt::Key_C);
-
-    menuBar()->addMenu(gameMenu);
-
-    gameMenu->addAction(startAction);
-    gameMenu->addSeparator();
-    gameMenu->addAction(pauseAction);
-    gameMenu->addAction(continueAction);
-    gameMenu->addSeparator();
-    gameMenu->addAction(restartAction);
-    gameMenu->addSeparator();
-    gameMenu->addAction(saveAction);
-    gameMenu->addAction(loadAction);
-    gameMenu->addSeparator();
-    gameMenu->addAction(quitAction);
-
-    // Create menu bar
-
-    toolBar = addToolBar("Tool Bar");
 
     toolBar->addAction(startAction);
     toolBar->addAction(pauseAction);
@@ -196,7 +228,7 @@ void MainWindow::initUi() {
     titleFont->setFamily("Monaco");
 
     boardTitle = new QLabel;
-    boardTitle->setText(tr("<font color=darkred>Score Board </font>"));
+    boardTitle->setText(tr("<font color=darkred>Score Board</font>"));
 
     // These spaces are aimed to align the board
 
@@ -292,8 +324,16 @@ void MainWindow::initUi() {
     scoreBoardLayout->addWidget(scoreTitle);
     scoreBoardLayout->addWidget(scoreBoard);
 
-    generalBoard->addLayout(stepBoardLayout);
-    generalBoard->addLayout(scoreBoardLayout);
+    QVBoxLayout* boardContentLayout = new QVBoxLayout;
+    QGroupBox* boardContentBox = new QGroupBox;
+
+    // boardContentBox->setFixedSize(SCORE_BOARD_LENGTH, SCORE_BOARD_WIDTH);
+
+    boardContentLayout->addLayout(stepBoardLayout);
+    boardContentLayout->addLayout(scoreBoardLayout);
+    boardContentBox->setLayout(boardContentLayout);
+
+    generalBoard->addWidget(boardContentBox);
 
     // Score board layout
 
@@ -382,7 +422,20 @@ void MainWindow::initSignalSlot() {
     QObject::connect(loadAction, &QAction::triggered, loadBtn, &QPushButton::click);
     QObject::connect(quitAction, &QAction::triggered, quitBtn, &QPushButton::click);
 
-    // Action(Menu bar) signals
+    QObject::connect(startAction_noIcon, &QAction::triggered, startBtn, &QPushButton::click);
+    QObject::connect(pauseAction_noIcon, &QAction::triggered, pauseBtn, &QPushButton::click);
+    QObject::connect(continueAction_noIcon, &QAction::triggered, continueBtn, &QPushButton::click);
+    QObject::connect(restartAction_noIcon, &QAction::triggered, restartBtn, &QPushButton::click);
+    QObject::connect(saveAction_noIcon, &QAction::triggered, saveBtn, &QPushButton::click);
+    QObject::connect(loadAction_noIcon, &QAction::triggered, loadBtn, &QPushButton::click);
+    QObject::connect(quitAction_noIcon, &QAction::triggered, quitBtn, &QPushButton::click);
+
+    // Basic action signals
+
+    QObject::connect(classicMode, &QAction::triggered, [=](){game->setEdgeMode(edgeMode::CLASSIC);});
+    QObject::connect(edgelessMode, &QAction::triggered, [=](){game->setEdgeMode(edgeMode::EDGELESS);});
+
+    // Game mode signals
 
     QObject::connect(timer, &QTimer::timeout, [=]() {
         if (this->game->getState() == gameState::RUNNING) this->game->getSnake()->move();
@@ -426,7 +479,20 @@ void MainWindow::updateUi() {
     loadAction->setDisabled(game->getState() != gameState::READY);
     quitAction->setDisabled(false);
 
+    startAction_noIcon->setDisabled(game->getState() != gameState::READY);
+    pauseAction_noIcon->setDisabled(game->getState() != gameState::RUNNING);
+    continueAction_noIcon->setDisabled(game->getState() != gameState::PAUSE);
+    restartAction_noIcon->setDisabled(game->getState() == gameState::READY || game->getState() == gameState::RUNNING);
+    saveAction_noIcon->setDisabled(game->getState() != gameState::PAUSE);
+    loadAction_noIcon->setDisabled(game->getState() != gameState::READY);
+    quitAction_noIcon->setDisabled(false);
+
     // Action disabled
+
+    classicMode->setChecked(game->getEdgeMode() == edgeMode::CLASSIC);
+    edgelessMode->setChecked(game->getEdgeMode() == edgeMode::EDGELESS);
+
+    // Menu selected
 
     stepBoard->setText(std::to_string(game->getStep()).c_str());
     if (

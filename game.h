@@ -15,6 +15,7 @@ public:
     Game(MainWindow*);
 
     gameState getState();
+    edgeMode getEdgeMode();
     int getStep();
     int getScore();
 
@@ -24,6 +25,7 @@ public:
 
 public slots:
     void setState(gameState);
+    void setEdgeMode(edgeMode);
     void setNewFood();
     void setSnakeGrowth();
 
@@ -40,6 +42,8 @@ private:
     MainWindow* parent;
 
     gameState state;
+    edgeMode edge;
+
     int step;
     int score;
 

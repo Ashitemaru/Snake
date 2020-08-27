@@ -14,7 +14,10 @@ Board::Board(MainWindow* p)
 
 void Board::paintEvent(QPaintEvent* event) {
     QPainter p(this);
-    QPen gridPainter(Qt::lightGray, GRID_EDGE_WIDTH);
+    QPen gridPainter(
+        parent->getGame()->getEdgeMode() == edgeMode::CLASSIC ? Qt::black : Qt::lightGray,
+        parent->getGame()->getEdgeMode() == edgeMode::CLASSIC ? GRID_EDGE_WIDTH : GRID_SEPARATOR_WIDTH
+    );
     p.setRenderHint(QPainter::Antialiasing, true);
 
     // Pre settings
@@ -23,6 +26,7 @@ void Board::paintEvent(QPaintEvent* event) {
     p.setBrush(Qt::white);
     p.drawRect(GRID_SHIFT, GRID_SHIFT, TILE_NUMBER * TILE_WIDTH, TILE_NUMBER * TILE_WIDTH);
 
+    gridPainter.setColor(Qt::lightGray);
     gridPainter.setWidth(GRID_SEPARATOR_WIDTH);
     gridPainter.setStyle(Qt::DashLine);
     p.setPen(gridPainter);

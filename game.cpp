@@ -18,6 +18,7 @@
 Game::Game(MainWindow* p)
     : parent(p)
     , state(gameState::READY)
+    , edge(edgeMode::CLASSIC)
     , step(0)
     , score(-SCORE_PER_FOOD)
     , obstacles()
@@ -26,6 +27,10 @@ Game::Game(MainWindow* p)
 
 gameState Game::getState() {
     return state;
+}
+
+edgeMode Game::getEdgeMode() {
+    return edge;
 }
 
 int Game::getStep() {
@@ -50,6 +55,10 @@ std::vector<position>& Game::getObstacles() {
 
 void Game::setState(gameState s) {
     state = s;
+}
+
+void Game::setEdgeMode(edgeMode e) {
+    edge = e;
 }
 
 void Game::setNewFood() {
@@ -130,6 +139,12 @@ void Game::saveGame() {
 
         // write in step & score
 
+        inputStream << "##########\n";
+        inputStream << edge << '\n';
+        inputStream << "##########\n\n";
+
+        // Write in edge mode
+
         finput.close();
     }
 }
@@ -204,6 +219,13 @@ void Game::loadGame() {
         score = scoreList[1].toInt();
 
         // Read & set score
+
+        tmpString = foutput.readLine();
+        tmpString = foutput.readLine();
+        tmpString = foutput.readLine();
+        tmpString = foutput.readLine();
+
+        edge = edgeMode(tmpString.toInt());
 
         state = gameState::PAUSE;
     }

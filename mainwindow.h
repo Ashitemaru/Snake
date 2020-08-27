@@ -65,6 +65,17 @@ private:
     QAction* loadAction;
     QAction* quitAction;
 
+    QAction* startAction_noIcon;
+    QAction* pauseAction_noIcon;
+    QAction* continueAction_noIcon;
+    QAction* restartAction_noIcon;
+    QAction* saveAction_noIcon;
+    QAction* loadAction_noIcon;
+    QAction* quitAction_noIcon;
+
+    QAction* classicMode;
+    QAction* edgelessMode;
+
     Board* board;
 
     void basicInit();

@@ -59,4 +59,7 @@
 #define BTN_WIDTH 40
 #define BTN_INTERVAL 10
 
+#define SCORE_BOARD_LENGTH 200
+#define SCORE_BOARD_WIDTH 100
+
 #endif // CONSTANT_H

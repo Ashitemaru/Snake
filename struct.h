@@ -10,6 +10,11 @@ enum gameState {
     RUNNING,
 };
 
+enum edgeMode {
+    CLASSIC,
+    EDGELESS,
+};
+
 enum direction {
     UP,
     DOWN,
