@@ -492,6 +492,9 @@ void MainWindow::updateUi() {
     classicMode->setChecked(game->getEdgeMode() == edgeMode::CLASSIC);
     edgelessMode->setChecked(game->getEdgeMode() == edgeMode::EDGELESS);
 
+    classicMode->setDisabled(game->getState() != gameState::READY);
+    edgelessMode->setDisabled(game->getState() != gameState::READY);
+
     // Menu selected
 
     stepBoard->setText(std::to_string(game->getStep()).c_str());
